@@ -1,43 +1,42 @@
-const dayArg = process.argv[2];
-const partArg = process.argv[3] ?? "1";
-
-function exitWithMessage(message: string) {
-  console.error(message);
-  process.exit(1);
-}
-
-function validateFirstArg(arg: string | undefined): string | void {
-  const invalidMessage = `Invalid argument "${arg}". First argument must be a number between 1 - 25`;
-  if (!arg) {
-    return exitWithMessage(invalidMessage);
+function parseArguments(
+  args: string[],
+):
+  | { status: "ok"; value: { day: string; part: string } }
+  | { status: "error"; message: string } {
+  const dayArg = args[2];
+  const partArg = args[3] ?? "1";
+  const dayValidationErrorMessage = `Invalid argument "${dayArg}". First argument must be a number between 1 - 25`;
+  if (!dayArg) {
+    return { status: "error", message: dayValidationErrorMessage };
   }
-  const day = parseInt(arg, 10);
+  const day = parseInt(dayArg, 10);
   if (Number.isNaN(day)) {
-    return exitWithMessage(invalidMessage);
+    return { status: "error", message: dayValidationErrorMessage };
   }
   if (day < 0 || day > 25) {
-    return exitWithMessage(invalidMessage);
+    return { status: "error", message: dayValidationErrorMessage };
   }
-  return day.toString().padStart(2, "0");
+  const invalidPartMessage = `Invalid argument "${partArg}". Second argument must be either 1 or 2`;
+  if (!partArg) {
+    return { status: "error", message: invalidPartMessage };
+  }
+  const part = parseInt(partArg, 10);
+  if (Number.isNaN(part)) {
+    return { status: "error", message: invalidPartMessage };
+  }
+  if (part !== 1 && part !== 2) {
+    return { status: "error", message: invalidPartMessage };
+  }
+  const value = { day: day.toString().padStart(2, "0"), part: part.toString() };
+  return { status: "ok", value };
 }
 
-function validateSecondArg(arg: string): string | void {
-  const invalidMessage = `Invalid argument "${arg}". Second argument must be either 1 or 2`;
-  if (!arg) {
-    return exitWithMessage(invalidMessage);
-  }
-  const day = parseInt(arg, 10);
-  if (Number.isNaN(day)) {
-    return exitWithMessage(invalidMessage);
-  }
-  if (day < 1 || day > 2) {
-    return exitWithMessage(invalidMessage);
-  }
-  return day.toString();
+const argsResult = parseArguments(process.argv);
+if (argsResult.status === "error") {
+  console.error(argsResult.message);
+  process.exit(1);
 }
-
-const day = validateFirstArg(dayArg)!;
-const part = validateSecondArg(partArg)!;
+const { day, part } = argsResult.value;
 
 const input = await Bun.file(`inputs/input_${day}.txt`).text();
 const processorPath = `./functions/day_${day}_${part}.ts`;
@@ -50,4 +49,5 @@ if (typeof processor !== "function") {
   process.exit(1);
 }
 
-processor(input);
+const answer = processor(input);
+console.log(`The answer for day ${day} part ${part} is : ${answer}`);

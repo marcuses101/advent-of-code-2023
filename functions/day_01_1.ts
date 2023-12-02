@@ -1,4 +1,4 @@
-export default function process(input: string): void {
+export default function process(input: string) {
   let sum = 0;
   let first: string | null = null;
   let last: string | null = null;
@@ -18,5 +18,5 @@ export default function process(input: string): void {
     }
     last = char;
   }
-  console.log(sum);
+  return sum;
 }
