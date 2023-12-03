@@ -5,7 +5,7 @@ const actual: CubeSet = {
 };
 
 type CubeSet = { red: number; green: number; blue: number };
-type Game = {
+export type Game = {
   id: number;
   bagPulls: CubeSet[];
 };
@@ -17,7 +17,7 @@ function extractNumber(input: string): number {
   return parseInt(input.match(/\d+/)?.[0]!);
 }
 
-function parseLine(line: string): Game {
+export function parseLine(line: string): Game {
   const [gameIdString, bagPullsPart] = line.split(":");
   const id = extractNumber(gameIdString);
   const bagPulls: CubeSet[] = bagPullsPart.split(";").map((pullString) => {
@@ -41,8 +41,8 @@ function parseLine(line: string): Game {
   return { id, bagPulls };
 }
 
-function validateGame(game: Game, real: CubeSet): boolean {
-  const maxColors = game.bagPulls.reduce(
+export function findMinimumCubeSet(cubeSets: CubeSet[]): CubeSet {
+  return cubeSets.reduce(
     (acc, currentPull) => {
       acc.red = Math.max(currentPull.red, acc.red);
       acc.green = Math.max(currentPull.green, acc.green);
@@ -55,8 +55,11 @@ function validateGame(game: Game, real: CubeSet): boolean {
       blue: 0,
     },
   );
+}
 
-  for (const [color, value] of Object.entries(maxColors)) {
+function validateGame(game: Game, real: CubeSet): boolean {
+  const minimumCubeSet = findMinimumCubeSet(game.bagPulls);
+  for (const [color, value] of Object.entries(minimumCubeSet)) {
     const actualColorValue = real[color as keyof CubeSet];
     if (value > actualColorValue) {
       return false;
