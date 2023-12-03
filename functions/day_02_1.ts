@@ -10,11 +10,16 @@ export type Game = {
   bagPulls: CubeSet[];
 };
 
-// Example
+type CubeColor = "red" | "green" | "blue";
+
+// Example Input
 // Game 1: 7 red, 14 blue; 2 blue, 3 red, 3 green; 4 green, 12 blue, 15 red; 3 green, 12 blue, 3 red; 11 red, 2 green
-//
 function extractNumber(input: string): number {
   return parseInt(input.match(/\d+/)?.[0]!);
+}
+
+function extractColor(input: string): CubeColor {
+  return input.match(/red|green|blue/)?.[0]! as CubeColor;
 }
 
 export function parseLine(line: string): Game {
@@ -24,15 +29,8 @@ export function parseLine(line: string): Game {
     return pullString.split(",").reduce(
       (acc, part) => {
         const count = extractNumber(part);
-        if (/red/.test(part)) {
-          acc.red = count;
-        }
-        if (/green/.test(part)) {
-          acc.green = count;
-        }
-        if (/blue/.test(part)) {
-          acc.blue = count;
-        }
+        const color = extractColor(part);
+        acc[color] = count;
         return acc;
       },
       { red: 0, green: 0, blue: 0 },

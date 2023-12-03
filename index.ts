@@ -42,7 +42,7 @@ const input = await Bun.file(`inputs/input_${day}.txt`).text();
 const processorPath = `./functions/day_${day}_${part}.ts`;
 const processor = (await import(processorPath)).default as (
   input: string,
-) => void;
+) => string | number;
 
 if (typeof processor !== "function") {
   console.error(`Default export of "${processorPath}" is not a function`);
