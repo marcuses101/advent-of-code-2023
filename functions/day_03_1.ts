@@ -5,43 +5,67 @@ type PartNumberLocation = {
   partNumberEndIndex: number;
 };
 
+type CharacterLocation = {
+  char: string;
+  rowIndex: number;
+  columnIndex: number;
+};
+
 type PotentialPart = {
   partNumber: number;
-  adjacentCharacters: string[];
+  adjacentCharacters: CharacterLocation[];
 };
 
 function getAdjacentCharacters(
   { lineIndex, partNumberStartIndex, partNumberEndIndex }: PartNumberLocation,
   lines: string[],
-): string[] {
-  const adjacentSymbols: string[] = [];
+): { char: string; rowIndex: number; columnIndex: number }[] {
+  const adjacentSymbols: CharacterLocation[] = [];
   const leftIndex = partNumberStartIndex - 1;
   const leftChar = lines[lineIndex][leftIndex];
   if (leftChar !== undefined) {
-    adjacentSymbols.push(leftChar);
+    adjacentSymbols.push({
+      char: leftChar,
+      rowIndex: lineIndex,
+      columnIndex: leftIndex,
+    });
   }
   const rightIndex = partNumberEndIndex;
   const rightChar = lines[lineIndex][rightIndex];
   if (rightChar !== undefined) {
-    adjacentSymbols.push(rightChar);
+    adjacentSymbols.push({
+      char: rightChar,
+      rowIndex: lineIndex,
+      columnIndex: rightIndex,
+    });
   }
-  const lineAbove = lines[lineIndex - 1];
-  const lineBelow = lines[lineIndex + 1];
+  const lineAboveIndex = lineIndex - 1;
+  const lineBelowIndex = lineIndex + 1;
+  const lineAbove = lines[lineAboveIndex];
+  const lineBelow = lines[lineBelowIndex];
 
   for (let i = leftIndex; i <= rightIndex; i++) {
     const charAbove = lineAbove?.[i];
     if (charAbove !== undefined) {
-      adjacentSymbols.push(charAbove);
+      adjacentSymbols.push({
+        char: charAbove,
+        rowIndex: lineAboveIndex,
+        columnIndex: i,
+      });
     }
     const charBelow = lineBelow?.[i];
     if (charBelow !== undefined) {
-      adjacentSymbols.push(charBelow);
+      adjacentSymbols.push({
+        char: charBelow,
+        rowIndex: lineBelowIndex,
+        columnIndex: i,
+      });
     }
   }
   return adjacentSymbols;
 }
 
-function inputToPossibleParts(input: string): PotentialPart[] {
+export function inputToPossibleParts(input: string): PotentialPart[] {
   const partLocations: PartNumberLocation[] = [];
   const lines = input.split("\n");
   lines.forEach((line, lineIndex) => {
@@ -69,7 +93,7 @@ export default function findMissingParts(input: string) {
   const potentialParts = inputToPossibleParts(input);
   return potentialParts.reduce(
     (acc, { partNumber, adjacentCharacters: adjacentSymbols }) => {
-      if (adjacentSymbols.some((char) => /[^a-zA-Z\d.]/.test(char))) {
+      if (adjacentSymbols.some(({ char }) => /[^a-zA-Z\d.]/.test(char))) {
         return acc + partNumber;
       }
       return acc;
